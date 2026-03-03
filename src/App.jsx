@@ -86,7 +86,11 @@ const DEFAULT_PUSH = {
 };
 
 const loadCfg = () => { try { return JSON.parse(localStorage.getItem("fa_vk3") || "null"); } catch { return null; } };
-const saveCfg = (c) => localStorage.setItem("fa_vk3", JSON.stringify(c));
+const saveCfg = (c) => {
+  localStorage.setItem("fa_vk3", JSON.stringify(c));
+  fetch("/api/settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(c) }).catch(() => {});
+};
+const loadRemoteCfg = () => fetch("/api/settings").then((r) => r.json()).catch(() => null);
 
 export default function App() {
   const cfg = loadCfg();
@@ -128,6 +132,31 @@ export default function App() {
 
   const pollRef = useRef(null);
   const statusTimers = useRef({});
+
+  // Load remote settings on mount (for cross-device sync)
+  useEffect(() => {
+    if (cfg) return; // local config exists, skip
+    loadRemoteCfg().then((remote) => {
+      if (!remote || !remote.gfxToken) return;
+      setGfxToken(remote.gfxToken);
+      setGfxInput(remote.gfxToken);
+      setPushPath(remote.pushPath || "");
+      setPushBearer(remote.pushBearer || "");
+      if (remote.idMap) setIdMap(remote.idMap);
+      if (remote.lastSent) setLastSent(remote.lastSent);
+      if (remote.history) {
+        setItems((prev) => {
+          const next = { ...prev };
+          Object.entries(remote.history).forEach(([k, h]) => {
+            if (next[k]) next[k] = { ...next[k], history: h };
+          });
+          return next;
+        });
+      }
+      setConnected(true);
+      localStorage.setItem("fa_vk3", JSON.stringify(remote));
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (connected) {
