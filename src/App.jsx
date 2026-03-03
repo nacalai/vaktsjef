@@ -536,7 +536,7 @@ export default function App() {
                   <button onClick={() => send(itemDef, true)}
                     disabled={is.loading || !hasText || !oid}
                     className="vk-btn vk-btn-live">
-                    {is.loading ? "Sender..." : "Send på lufta"}
+                    {is.loading ? "Sender…" : "⏵ Send på lufta"}
                   </button>
                   <button onClick={() => send(itemDef, false)}
                     disabled={is.loading || !hasText}
@@ -546,7 +546,7 @@ export default function App() {
                   <button onClick={() => takeOut(ik)}
                     disabled={!isLive}
                     className="vk-btn vk-btn-off">
-                    Ta av lufta
+                    ⏹ Ta av
                   </button>
                 </div>
 
