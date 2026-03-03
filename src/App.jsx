@@ -289,7 +289,11 @@ export default function App() {
     }
     setItems((p) => ({ ...p, [ik]: { ...p[ik], loading: true, status: null } }));
     try {
+      // Build payload: start with SCHEMA, merge all last-sent values, then apply current item
       const payload = { ...SCHEMA };
+      Object.values(lastSent).forEach((sent) => {
+        Object.entries(sent).forEach(([k, v]) => { if (k in payload) payload[k] = v; });
+      });
       itemDef.fields.forEach((f) => { payload[f.sk] = (is.fields[f.sk] || "").trim(); });
       await FlowicsAPI.httpPush(pushPath, pushBearer, payload);
 
