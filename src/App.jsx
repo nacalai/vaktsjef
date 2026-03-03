@@ -158,6 +158,31 @@ export default function App() {
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Poll server settings for cross-session sync (every 5s)
+  const syncRef = useRef(null);
+  useEffect(() => {
+    if (!connected) return;
+    syncRef.current = setInterval(async () => {
+      const remote = await loadRemoteCfg();
+      if (!remote) return;
+      if (remote.lastSent) setLastSent(remote.lastSent);
+      if (remote.history) {
+        setItems((prev) => {
+          const next = { ...prev };
+          let changed = false;
+          Object.entries(remote.history).forEach(([k, h]) => {
+            if (next[k] && JSON.stringify(next[k].history) !== JSON.stringify(h)) {
+              next[k] = { ...next[k], history: h };
+              changed = true;
+            }
+          });
+          return changed ? next : prev;
+        });
+      }
+    }, 5000);
+    return () => clearInterval(syncRef.current);
+  }, [connected]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (connected) {
       const history = {};
