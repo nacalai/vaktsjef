@@ -9,6 +9,10 @@ const app = express();
 const PORT = 80;
 const SETTINGS_FILE = "/data/settings.json";
 
+// ─── VERSION ──────────────────────────────────────────────────────────────────
+const BUILD_TIME = new Date().toISOString();
+app.get("/api/version", (req, res) => res.json({ v: "1.1.0", built: BUILD_TIME }));
+
 // ─── SETTINGS API ─────────────────────────────────────────────────────────────
 app.get("/api/settings", (req, res) => {
   if (existsSync(SETTINGS_FILE)) {
