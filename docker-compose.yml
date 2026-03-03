@@ -1,0 +1,7 @@
+services:
+  vaktsjef:
+    build: .
+    container_name: vaktsjef
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8090:80"
