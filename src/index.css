@@ -286,6 +286,16 @@ body {
 .vk-btn-off:hover:not(:disabled) { background: #1E1520; color: #E8243C; }
 .vk-btn-off:disabled { background: #0A1120; color: #162440; }
 
+.vk-btn-off-live {
+  background: transparent; color: #E8243C;
+  border: 1.5px solid #E8243C;
+}
+.vk-btn-off-live:hover:not(:disabled) {
+  background: #E8243C; color: #fff;
+  box-shadow: 0 4px 20px rgba(232, 36, 60, 0.3);
+  transform: translateY(-1px);
+}
+
 /* ─── STATUS ────────────────────────── */
 .vk-msg {
   margin-top: 14px; padding: 11px 16px; border-radius: 10px;

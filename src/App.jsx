@@ -484,7 +484,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* CURRENT VALUES: API controls (live from Flowics) or local fallback */}
+                {/* CURRENT VALUES: only show API controls (from Flowics Integration IDs) */}
                 {(() => {
                   const apiCtrls = oid ? controlValues[oid] : null;
                   if (apiCtrls && apiCtrls.length > 0) {
@@ -497,16 +497,6 @@ export default function App() {
                             <span className="vk-current-val">{c.value}</span>
                           </div>
                         ))}
-                      </div>
-                    );
-                  }
-                  if (sent) {
-                    return (
-                      <div className="vk-current vk-current-local">
-                        <span className="vk-current-src">Sist sendt {sent.time}</span>
-                        {itemDef.fields.map((f) => sent[f.sk] ? (
-                          <span key={f.sk} className="vk-current-val">{sent[f.sk]}</span>
-                        ) : null)}
                       </div>
                     );
                   }
@@ -545,7 +535,7 @@ export default function App() {
                   </button>
                   <button onClick={() => takeOut(ik)}
                     disabled={!isLive}
-                    className="vk-btn vk-btn-off">
+                    className={`vk-btn ${isLive ? "vk-btn-off-live" : "vk-btn-off"}`}>
                     ⏹ Ta av
                   </button>
                 </div>
