@@ -7,6 +7,12 @@ services:
       - "127.0.0.1:8090:80"
     volumes:
       - vaktsjef-data:/data
+    networks:
+      - tunnel-bridge
 
 volumes:
   vaktsjef-data:
+
+networks:
+  tunnel-bridge:
+    external: true
