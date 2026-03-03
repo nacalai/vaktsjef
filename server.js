@@ -47,7 +47,7 @@ app.use("/api/flowics", createProxyMiddleware({
 
 // ─── STATIC FILES ─────────────────────────────────────────────────────────────
 app.use(express.static(join(__dirname, "dist")));
-app.get("*", (req, res) => {
+app.get("/{*splat}", (req, res) => {
   res.sendFile(join(__dirname, "dist", "index.html"));
 });
 
