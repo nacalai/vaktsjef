@@ -99,6 +99,8 @@ export default function App() {
   const [connected, setConnected] = useState(!!cfg?.gfxToken);
   const [pushPath, setPushPath] = useState(cfg?.pushPath || DEFAULT_PUSH.proxyPath);
   const [pushBearer, setPushBearer] = useState(cfg?.pushBearer || DEFAULT_PUSH.bearer);
+  const [outputUrl, setOutputUrl] = useState(cfg?.outputUrl || "");
+  const [showPreview, setShowPreview] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState("nyhetsvarsel");
 
@@ -142,6 +144,7 @@ export default function App() {
       setGfxInput(remote.gfxToken);
       setPushPath(remote.pushPath || "");
       setPushBearer(remote.pushBearer || "");
+      if (remote.outputUrl) setOutputUrl(remote.outputUrl);
       if (remote.idMap) setIdMap(remote.idMap);
       if (remote.lastSent) setLastSent(remote.lastSent);
       if (remote.history) {
@@ -187,9 +190,9 @@ export default function App() {
     if (connected) {
       const history = {};
       Object.entries(items).forEach(([k, v]) => { if (v.history.length) history[k] = v.history; });
-      saveCfg({ gfxToken, pushPath, pushBearer, idMap, lastSent, history });
+      saveCfg({ gfxToken, pushPath, pushBearer, outputUrl, idMap, lastSent, history });
     }
-  }, [connected, gfxToken, pushPath, pushBearer, idMap, lastSent, items]);
+  }, [connected, gfxToken, pushPath, pushBearer, outputUrl, idMap, lastSent, items]);
 
   // ─── PARSE OVERLAY DATA ──────────────────────────────────────────────────────
   const parseOverlayData = (data) => {
@@ -418,6 +421,8 @@ export default function App() {
               <input value={pushPath} onChange={(e) => setPushPath(e.target.value)} className="vk-cfg-in vk-cfg-mono" />
               <label>Push Bearer</label>
               <input type="password" value={pushBearer} onChange={(e) => setPushBearer(e.target.value)} className="vk-cfg-in" />
+              <label>Output URL (preview)</label>
+              <input value={outputUrl} onChange={(e) => setOutputUrl(e.target.value)} placeholder="https://graphics.flowics.com/..." className="vk-cfg-in vk-cfg-mono" />
             </div>
             <div>
               <h4>Overlays ({apiOverlays.length})</h4>
@@ -448,6 +453,20 @@ export default function App() {
           );
         })}
       </nav>
+
+      {/* PREVIEW */}
+      {outputUrl && (
+        <div className="vk-preview-wrap">
+          <button className="vk-preview-toggle" onClick={() => setShowPreview(!showPreview)}>
+            {showPreview ? "▾" : "▸"} Output
+          </button>
+          {showPreview && (
+            <div className="vk-preview">
+              <iframe src={outputUrl} title="Flowics Output" allowTransparency="true" style={{background: 'transparent'}} />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ITEMS */}
       {activeGroup && (
