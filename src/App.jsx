@@ -134,6 +134,7 @@ export default function App() {
 
   const pollRef = useRef(null);
   const statusTimers = useRef({});
+  const syncingRef = useRef(false);
 
   // Load remote settings on mount (for cross-device sync)
   useEffect(() => {
@@ -168,6 +169,7 @@ export default function App() {
     syncRef.current = setInterval(async () => {
       const remote = await loadRemoteCfg();
       if (!remote) return;
+      syncingRef.current = true;
       if (remote.outputUrl !== undefined) setOutputUrl((prev) => remote.outputUrl !== prev ? remote.outputUrl : prev);
       if (remote.pushPath !== undefined) setPushPath((prev) => remote.pushPath !== prev ? remote.pushPath : prev);
       if (remote.pushBearer !== undefined) setPushBearer((prev) => remote.pushBearer !== prev ? remote.pushBearer : prev);
@@ -186,12 +188,13 @@ export default function App() {
           return changed ? next : prev;
         });
       }
+      setTimeout(() => { syncingRef.current = false; }, 200);
     }, 5000);
     return () => clearInterval(syncRef.current);
   }, [connected]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (connected) {
+    if (connected && !syncingRef.current) {
       const history = {};
       Object.entries(items).forEach(([k, v]) => { if (v.history.length) history[k] = v.history; });
       saveCfg({ gfxToken, pushPath, pushBearer, outputUrl, idMap, lastSent, history });
