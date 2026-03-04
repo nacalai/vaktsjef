@@ -168,6 +168,10 @@ export default function App() {
     syncRef.current = setInterval(async () => {
       const remote = await loadRemoteCfg();
       if (!remote) return;
+      if (remote.outputUrl !== undefined) setOutputUrl((prev) => remote.outputUrl !== prev ? remote.outputUrl : prev);
+      if (remote.pushPath !== undefined) setPushPath((prev) => remote.pushPath !== prev ? remote.pushPath : prev);
+      if (remote.pushBearer !== undefined) setPushBearer((prev) => remote.pushBearer !== prev ? remote.pushBearer : prev);
+      if (remote.idMap) setIdMap((prev) => JSON.stringify(remote.idMap) !== JSON.stringify(prev) ? remote.idMap : prev);
       if (remote.lastSent) setLastSent(remote.lastSent);
       if (remote.history) {
         setItems((prev) => {
