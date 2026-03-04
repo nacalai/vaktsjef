@@ -437,12 +437,13 @@ export default function App() {
       {/* TABS */}
       <nav className="vk-tabs">
         {GROUPS.map((g) => {
-          const hasLive = g.items.some((it) => liveStates[idMap[it.key]] === "in");
+          const liveCount = g.items.filter((it) => liveStates[idMap[it.key]] === "in").length;
           return (
             <button key={g.key} onClick={() => setActiveTab(g.key)}
               className={`vk-tab ${activeTab === g.key ? "on" : ""}`}>
-              {hasLive && <span className="vk-dot" />}
+              {liveCount > 0 && <span className="vk-dot" />}
               {g.label}
+              {liveCount > 0 && <span className="vk-tab-count">{liveCount}</span>}
             </button>
           );
         })}
@@ -484,74 +485,65 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* CURRENT VALUES: only show API controls (from Flowics Integration IDs) */}
-                {(() => {
-                  const apiCtrls = oid ? controlValues[oid] : null;
-                  if (apiCtrls && apiCtrls.length > 0) {
-                    return (
-                      <div className="vk-current vk-current-api">
-                        <span className="vk-current-src">Flowics</span>
-                        {apiCtrls.map((c) => (
-                          <div key={c.id} className="vk-current-item">
-                            <span className="vk-current-key">{c.title}</span>
-                            <span className="vk-current-val">{c.value}</span>
-                          </div>
-                        ))}
+                {/* CARD BODY — fields + buttons */}
+                <div className="vk-card-body">
+                  {/* FIELDS */}
+                  <div className="vk-fields">
+                    {itemDef.fields.map((f) => (
+                      <div key={f.sk} className="vk-field">
+                        <label className="vk-field-lbl">{f.label}</label>
+                        <input type="text"
+                          value={is.fields[f.sk] || ""}
+                          onChange={(e) => updateField(ik, f.sk, e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) send(itemDef, true);
+                            else if (e.key === "Enter") send(itemDef, false);
+                          }}
+                          placeholder={f.placeholder}
+                          className={f.large ? "vk-input vk-input-lg" : "vk-input"} />
                       </div>
-                    );
-                  }
-                  return null;
-                })()}
+                    ))}
+                  </div>
 
-                {/* FIELDS */}
-                <div className="vk-fields">
-                  {itemDef.fields.map((f) => (
-                    <div key={f.sk} className="vk-field">
-                      <label className="vk-field-lbl">{f.label}</label>
-                      <input type="text"
-                        value={is.fields[f.sk] || ""}
-                        onChange={(e) => updateField(ik, f.sk, e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) send(itemDef, true);
-                          else if (e.key === "Enter") send(itemDef, false);
-                        }}
-                        placeholder={f.placeholder}
-                        className={f.large ? "vk-input vk-input-lg" : "vk-input"} />
+                  {/* BUTTONS */}
+                  <div className="vk-btns">
+                    <button onClick={() => send(itemDef, true)}
+                      disabled={is.loading || !hasText || !oid}
+                      className="vk-btn vk-btn-live">
+                      {is.loading ? "Sender…" : <>⏵ Send på lufta<span className="vk-kbd">Ctrl+↵</span></>}
+                    </button>
+                    <button onClick={() => send(itemDef, false)}
+                      disabled={is.loading || !hasText}
+                      className="vk-btn vk-btn-push">
+                      Oppdater tekst<span className="vk-kbd">↵</span>
+                    </button>
+                    <button onClick={() => takeOut(ik)}
+                      disabled={!isLive}
+                      className={`vk-btn ${isLive ? "vk-btn-off-live" : "vk-btn-off"}`}>
+                      ⏹ Ta av
+                    </button>
+                  </div>
+
+                  {/* STATUS */}
+                  {is.status && (
+                    <div className={`vk-msg vk-msg-${is.status.t}`}>
+                      <span className="vk-msg-icon">
+                        {is.status.t === "ok" ? "✓" : is.status.t === "error" ? "✕" : "ℹ"}
+                      </span>
+                      {is.status.m}
                     </div>
-                  ))}
+                  )}
                 </div>
-
-                {/* BUTTONS */}
-                <div className="vk-btns">
-                  <button onClick={() => send(itemDef, true)}
-                    disabled={is.loading || !hasText || !oid}
-                    className="vk-btn vk-btn-live">
-                    {is.loading ? "Sender…" : "⏵ Send på lufta"}
-                  </button>
-                  <button onClick={() => send(itemDef, false)}
-                    disabled={is.loading || !hasText}
-                    className="vk-btn vk-btn-push">
-                    Oppdater tekst
-                  </button>
-                  <button onClick={() => takeOut(ik)}
-                    disabled={!isLive}
-                    className={`vk-btn ${isLive ? "vk-btn-off-live" : "vk-btn-off"}`}>
-                    ⏹ Ta av
-                  </button>
-                </div>
-
-                {/* STATUS */}
-                {is.status && <div className={`vk-msg vk-msg-${is.status.t}`}>{is.status.m}</div>}
 
                 {/* HISTORY */}
                 {is.history.length > 0 && (
                   <div className="vk-hist">
                     {is.history.map((e, i) => (
-                      <button key={i} className="vk-hist-row" onClick={() => recall(itemDef, e)}>
+                      <button key={i} className="vk-hist-row" onClick={() => recall(itemDef, e)} title="Klikk for å hente tilbake">
                         <span className="vk-hist-t">{e.time}</span>
                         <span className="vk-hist-v">{e[itemDef.fields[0].sk]}</span>
-                        {e.wentIn && i === 0 && isLive && <span className="vk-hist-badge">PÅ LUFTA</span>}
-                        {e.wentIn && !(i === 0 && isLive) && <span className="vk-hist-badge off">SENDT</span>}
+                        {e.wentIn && i === 0 && isLive && <span className="vk-hist-badge on-air">PÅ LUFTA</span>}
+                        {e.wentIn && !(i === 0 && isLive) && <span className="vk-hist-badge sent">SENDT</span>}
                       </button>
                     ))}
                   </div>
@@ -563,7 +555,7 @@ export default function App() {
       )}
 
       <footer className="vk-foot">
-        Enter = oppdater tekst · Ctrl+Enter = send på lufta · {apiOverlays.length} overlays tilgjengelig
+        <kbd>↵</kbd> oppdater tekst · <kbd>Ctrl</kbd>+<kbd>↵</kbd> send på lufta · {apiOverlays.length} overlays
       </footer>
     </div>
   );
